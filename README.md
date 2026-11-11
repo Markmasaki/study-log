@@ -1,36 +1,12 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 学習記録（study-log）
 
-## Getting Started
+勉強時間・Q-Assist の視聴・QB の進捗を記録する個人用 PWA。
 
-First, run the development server:
+- Next.js (App Router) + Tailwind / Supabase（プロジェクト `qa-progress`、テーブルは `sl_` で始まる）/ Vercel
+- 画面：`/` ホーム、`/time` 勉強時間、`/qassist` Q-Assist、`/qb` QB
+- データ設計：`supabase/schema.sql`（行は本人のみ読み書き可）
+- 環境変数：`.env.example` を参照
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 今後
+- mediLink の QB 進捗の半自動取り込み（`sl_qb_progress` に `source = 'import'` で upsert）
+- 科目別・教材別のグラフ、国試までのペース表示

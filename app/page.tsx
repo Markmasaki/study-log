@@ -1,69 +1,60 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+import { supabase, today, fmtMinutes, pct, type StudySession, type Lecture, type QbRow } from "@/lib/supabase";
 
 export default function Home() {
+  const [sessions, setSessions] = useState<StudySession[]>([]);
+  const [lectures, setLectures] = useState<Lecture[]>([]);
+  const [qb, setQb] = useState<QbRow[]>([]);
+
+  useEffect(() => {
+    supabase.from("sl_study_sessions").select("*").gte("studied_on", today(-6)).then(({ data }) => setSessions(data ?? []));
+    supabase.from("sl_qassist_lectures").select("*").then(({ data }) => setLectures(data ?? []));
+    supabase.from("sl_qb_progress").select("*").then(({ data }) => setQb(data ?? []));
+  }, []);
+
+  const days = Array.from({ length: 7 }, (_, i) => today(i - 6));
+  const perDay = days.map((d) => sessions.filter((s) => s.studied_on === d).reduce((a, s) => a + s.minutes, 0));
+  const max = Math.max(60, ...perDay);
+  const week = perDay.reduce((a, b) => a + b, 0);
+  const watched = lectures.filter((l) => l.watched_on).length;
+  const answered = qb.reduce((a, r) => a + r.answered, 0);
+  const total = qb.reduce((a, r) => a + r.total, 0);
+  const correct = qb.reduce((a, r) => a + r.correct, 0);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="space-y-4">
+      <h1 className="text-xl font-semibold">ホーム</h1>
+
+      <section className="card">
+        <p className="label">今日の勉強時間</p>
+        <p className="text-3xl font-semibold">{fmtMinutes(perDay[6])}</p>
+        <p className="mt-1 text-sm text-muted">直近7日間 {fmtMinutes(week)}</p>
+        <div className="mt-4 flex h-24 items-end gap-2">
+          {perDay.map((m, i) => (
+            <div key={days[i]} className="flex flex-1 flex-col items-center gap-1">
+              <div className="w-full rounded-t bg-accent" style={{ height: `${(m / max) * 100}%`, minHeight: m ? 2 : 0 }} />
+              <span className="text-[10px] text-muted">{Number(days[i].slice(8))}</span>
+            </div>
+          ))}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </section>
+
+      <section className="card">
+        <p className="label">Q-Assist 視聴</p>
+        <p className="text-lg font-semibold">{watched} / {lectures.length} 講義（{pct(watched, lectures.length)}%）</p>
+        <div className="bar mt-2"><span style={{ width: `${pct(watched, lectures.length)}%` }} /></div>
+      </section>
+
+      <section className="card">
+        <p className="label">QB 演習</p>
+        <p className="text-lg font-semibold">{answered} / {total} 問（{pct(answered, total)}%）</p>
+        <div className="bar mt-2"><span style={{ width: `${pct(answered, total)}%` }} /></div>
+        <p className="mt-2 text-sm text-muted">正答率 {pct(correct, answered)}%</p>
+      </section>
+
+      <button className="btn-ghost" onClick={() => supabase.auth.signOut()}>ログアウト</button>
     </div>
   );
 }
