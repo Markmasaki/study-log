@@ -10,3 +10,6 @@
 ## 今後
 - mediLink の QB 進捗の半自動取り込み（`sl_qb_progress` に `source = 'import'` で upsert）
 - 科目別・教材別のグラフ、国試までのペース表示
+
+## 公開
+Vercel に GitHub 連携で自動デプロイ（main への push で更新）。
