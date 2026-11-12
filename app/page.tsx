@@ -25,7 +25,9 @@ export default function Home() {
   const qaDone = target.reduce((a, c) => a + watchedSeconds(c), 0);
   const answered = qb.reduce((a, r) => a + r.answered, 0);
   const total = qb.reduce((a, r) => a + r.total, 0);
-  const correct = qb.reduce((a, r) => a + r.correct, 0);
+  const graded = qb.filter((r) => r.correct != null);
+  const correct = graded.reduce((a, r) => a + (r.correct ?? 0), 0);
+  const gradedAnswered = graded.reduce((a, r) => a + r.answered, 0);
 
   return (
     <div className="space-y-4">
@@ -55,7 +57,7 @@ export default function Home() {
         <p className="label">QB 演習</p>
         <p className="text-lg font-semibold">{answered} / {total} 問（{pct(answered, total)}%）</p>
         <div className="bar mt-2"><span style={{ width: `${pct(answered, total)}%` }} /></div>
-        <p className="mt-2 text-sm text-muted">正答率 {pct(correct, answered)}%</p>
+        <p className="mt-2 text-sm text-muted">正答率 {graded.length ? `${pct(correct, gradedAnswered)}%` : "未取得"}</p>
       </section>
 
       <section className="card">

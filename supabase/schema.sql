@@ -28,7 +28,7 @@ create table if not exists public.sl_qb_progress (
   subject text not null,
   total integer not null default 0 check (total >= 0),
   answered integer not null default 0 check (answered >= 0),
-  correct integer not null default 0 check (correct >= 0),
+  correct integer check (correct >= 0),
   round integer not null default 1 check (round >= 1),
   source text not null default 'manual' check (source in ('manual','import')),
   updated_at timestamptz not null default now(),

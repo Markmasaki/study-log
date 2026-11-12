@@ -51,7 +51,7 @@ export type QbRow = {
   subject: string;
   total: number;
   answered: number;
-  correct: number;
+  correct: number | null;
   round: number;
   source: "manual" | "import";
   updated_at: string;
