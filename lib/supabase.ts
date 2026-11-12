@@ -34,6 +34,25 @@ export type QbRow = {
   updated_at: string;
 };
 
+export type AnkiDaily = {
+  id: string;
+  day: string;
+  reviews: number;
+  correct: number | null;
+  new_cards: number | null;
+  minutes: number | null;
+};
+
+export type AnkiDeck = {
+  id: string;
+  deck: string;
+  due_new: number;
+  due_learn: number;
+  due_review: number;
+  total: number | null;
+  updated_at: string;
+};
+
 export const CATEGORY_LABEL = { qassist: "Q-Assist", qb: "QB", other: "その他" } as const;
 
 /** 端末のローカル日付を YYYY-MM-DD で返す */

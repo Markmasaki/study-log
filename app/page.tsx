@@ -1,17 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase, today, fmtMinutes, pct, type StudySession, type Lecture, type QbRow } from "@/lib/supabase";
+import { supabase, today, fmtMinutes, pct, type StudySession, type Lecture, type QbRow, type AnkiDaily } from "@/lib/supabase";
 
 export default function Home() {
   const [sessions, setSessions] = useState<StudySession[]>([]);
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [qb, setQb] = useState<QbRow[]>([]);
+  const [anki, setAnki] = useState<AnkiDaily[]>([]);
 
   useEffect(() => {
     supabase.from("sl_study_sessions").select("*").gte("studied_on", today(-6)).then(({ data }) => setSessions(data ?? []));
     supabase.from("sl_qassist_lectures").select("*").then(({ data }) => setLectures(data ?? []));
     supabase.from("sl_qb_progress").select("*").then(({ data }) => setQb(data ?? []));
+    supabase.from("sl_anki_daily").select("*").eq("day", today()).then(({ data }) => setAnki(data ?? []));
   }, []);
 
   const days = Array.from({ length: 7 }, (_, i) => today(i - 6));
@@ -52,6 +54,12 @@ export default function Home() {
         <p className="text-lg font-semibold">{answered} / {total} 問（{pct(answered, total)}%）</p>
         <div className="bar mt-2"><span style={{ width: `${pct(answered, total)}%` }} /></div>
         <p className="mt-2 text-sm text-muted">正答率 {pct(correct, answered)}%</p>
+      </section>
+
+      <section className="card">
+        <p className="label">Anki 今日の復習</p>
+        <p className="text-lg font-semibold">{anki[0]?.reviews ?? 0} 枚</p>
+        {anki[0]?.minutes != null && <p className="mt-1 text-sm text-muted">{fmtMinutes(anki[0].minutes)}</p>}
       </section>
 
       <button className="btn-ghost" onClick={() => supabase.auth.signOut()}>ログアウト</button>

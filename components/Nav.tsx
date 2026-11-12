@@ -8,6 +8,7 @@ const TABS = [
   { href: "/time", label: "勉強時間" },
   { href: "/qassist", label: "Q-Assist" },
   { href: "/qb", label: "QB" },
+  { href: "/anki", label: "Anki" },
 ];
 
 export default function Nav() {

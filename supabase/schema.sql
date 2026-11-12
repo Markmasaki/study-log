@@ -52,3 +52,44 @@ begin
       t || '_own', t);
   end loop;
 end $$;
+
+-- Anki（日別の復習数・デッキ別の残り枚数）
+create table if not exists public.sl_anki_daily (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  day date not null,
+  reviews integer not null default 0 check (reviews >= 0),
+  correct integer check (correct >= 0),
+  new_cards integer check (new_cards >= 0),
+  minutes integer check (minutes >= 0),
+  source text not null default 'manual' check (source in ('manual','import')),
+  updated_at timestamptz not null default now(),
+  unique (user_id, day)
+);
+
+create table if not exists public.sl_anki_decks (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  deck text not null,
+  due_new integer not null default 0 check (due_new >= 0),
+  due_learn integer not null default 0 check (due_learn >= 0),
+  due_review integer not null default 0 check (due_review >= 0),
+  total integer check (total >= 0),
+  source text not null default 'manual' check (source in ('manual','import')),
+  updated_at timestamptz not null default now(),
+  unique (user_id, deck)
+);
+
+alter table public.sl_anki_daily enable row level security;
+alter table public.sl_anki_decks enable row level security;
+
+do $$
+declare t text;
+begin
+  foreach t in array array['sl_anki_daily','sl_anki_decks'] loop
+    execute format('drop policy if exists %I on public.%I', t || '_own', t);
+    execute format(
+      'create policy %I on public.%I for all to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id)',
+      t || '_own', t);
+  end loop;
+end $$;
