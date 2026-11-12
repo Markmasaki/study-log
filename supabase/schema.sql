@@ -93,3 +93,25 @@ begin
       t || '_own', t);
   end loop;
 end $$;
+
+-- Q-Assist・総まとめ講座の章ごとのカタログ（動画数・合計秒数）と、章ごとの視聴済み本数
+create table if not exists public.sl_qassist_chapters (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  course text not null,
+  chapter text not null,
+  videos integer not null check (videos >= 0),
+  seconds integer not null check (seconds >= 0),
+  is_old boolean not null default false,
+  is_optional boolean not null default false,
+  sort integer not null default 0,
+  watched integer not null default 0 check (watched >= 0),
+  updated_at timestamptz not null default now(),
+  unique (user_id, course, chapter),
+  check (watched <= videos)
+);
+create index if not exists sl_qassist_chapters_user on public.sl_qassist_chapters (user_id, sort);
+alter table public.sl_qassist_chapters enable row level security;
+drop policy if exists sl_qassist_chapters_own on public.sl_qassist_chapters;
+create policy sl_qassist_chapters_own on public.sl_qassist_chapters for all to authenticated
+  using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);

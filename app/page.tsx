@@ -1,17 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase, today, fmtMinutes, pct, type StudySession, type Lecture, type QbRow, type AnkiDaily } from "@/lib/supabase";
+import { supabase, today, fmtMinutes, fmtHours, watchedSeconds, pct, type StudySession, type Chapter, type QbRow, type AnkiDaily } from "@/lib/supabase";
 
 export default function Home() {
   const [sessions, setSessions] = useState<StudySession[]>([]);
-  const [lectures, setLectures] = useState<Lecture[]>([]);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
   const [qb, setQb] = useState<QbRow[]>([]);
   const [anki, setAnki] = useState<AnkiDaily[]>([]);
 
   useEffect(() => {
     supabase.from("sl_study_sessions").select("*").gte("studied_on", today(-6)).then(({ data }) => setSessions(data ?? []));
-    supabase.from("sl_qassist_lectures").select("*").then(({ data }) => setLectures(data ?? []));
+    supabase.from("sl_qassist_chapters").select("*").then(({ data }) => setChapters(data ?? []));
     supabase.from("sl_qb_progress").select("*").then(({ data }) => setQb(data ?? []));
     supabase.from("sl_anki_daily").select("*").eq("day", today()).then(({ data }) => setAnki(data ?? []));
   }, []);
@@ -20,7 +20,9 @@ export default function Home() {
   const perDay = days.map((d) => sessions.filter((s) => s.studied_on === d).reduce((a, s) => a + s.minutes, 0));
   const max = Math.max(60, ...perDay);
   const week = perDay.reduce((a, b) => a + b, 0);
-  const watched = lectures.filter((l) => l.watched_on).length;
+  const target = chapters.filter((c) => !c.is_old && !c.is_optional);
+  const qaTotal = target.reduce((a, c) => a + c.seconds, 0);
+  const qaDone = target.reduce((a, c) => a + watchedSeconds(c), 0);
   const answered = qb.reduce((a, r) => a + r.answered, 0);
   const total = qb.reduce((a, r) => a + r.total, 0);
   const correct = qb.reduce((a, r) => a + r.correct, 0);
@@ -45,8 +47,8 @@ export default function Home() {
 
       <section className="card">
         <p className="label">Q-Assist 視聴</p>
-        <p className="text-lg font-semibold">{watched} / {lectures.length} 講義（{pct(watched, lectures.length)}%）</p>
-        <div className="bar mt-2"><span style={{ width: `${pct(watched, lectures.length)}%` }} /></div>
+        <p className="text-lg font-semibold">{fmtHours(qaDone)} / {fmtHours(qaTotal)}（{pct(qaDone, qaTotal)}%）</p>
+        <div className="bar mt-2"><span style={{ width: `${pct(qaDone, qaTotal)}%` }} /></div>
       </section>
 
       <section className="card">

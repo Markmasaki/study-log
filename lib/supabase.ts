@@ -23,6 +23,29 @@ export type Lecture = {
   watched_on: string | null;
 };
 
+export type Chapter = {
+  id: string;
+  course: string;
+  chapter: string;
+  videos: number;
+  seconds: number;
+  is_old: boolean;
+  is_optional: boolean;
+  sort: number;
+  watched: number;
+};
+
+/** 視聴済み本数から、時間で重みを付けた視聴済み秒数を概算する */
+export function watchedSeconds(c: Chapter): number {
+  return c.videos > 0 ? Math.round((c.watched / c.videos) * c.seconds) : 0;
+}
+
+export function fmtHours(sec: number): string {
+  const h = Math.floor(sec / 3600);
+  const m = Math.round((sec % 3600) / 60);
+  return `${h}時間${String(m).padStart(2, "0")}分`;
+}
+
 export type QbRow = {
   id: string;
   subject: string;
